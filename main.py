@@ -57,6 +57,27 @@ def decode_frame(encoded_data, width, height):
 
     return decoded_frame
 
+def adjust_brightness_inversion(image, threshold=30, min_brightness=40, max_brightness=200):
+    # Convert image to float and normalize to range [0, 1]
+    image = image.astype(float) / 255.0
+    
+    # Normalize the threshold value
+    threshold_norm = threshold / 255.0
+    
+    # Compute the distance from the threshold
+    distance_from_threshold = np.abs(image - threshold_norm)
+    
+    # Ensure that the minimum brightness is applied correctly
+    # If the original value is less than the threshold, increase brightness based on distance
+    # Otherwise, keep the original value
+    adjusted_image = np.where(image < threshold_norm, distance_from_threshold/threshold_norm, image)
+    
+    # Scale back to range [0, 255] and convert to uint8
+    min_norm = min_brightness/255.0
+    adjusted_image = np.clip(255*(min_norm+(adjusted_image*(1-min_norm))), 0, 255).astype(np.uint8)
+    
+    return adjusted_image
+
 def adjust_brightness(image, threshold=40, new_min=80, new_max=255): #make simple if < x then set to range new -max
     # Convert image to float and normalize to range [0, 1]
     image = image.astype(float) / 255.0
